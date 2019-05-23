@@ -245,7 +245,7 @@ x1 = 143
 x2 = 530
 
 ##REPLACE IMAGE FOLDER
-IMG_FOLDER = "/Users/juanhuerta/Desktop/trackcolor/INPUT"
+IMG_FOLDER = "TEST"
 
 ##this below is a demostration
 
