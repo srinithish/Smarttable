@@ -16,9 +16,9 @@ CLS_MAPPING_DICT = {'apple':0,'carrot':1,'cucumber':2}
 
 
 
-def enumerateObjects(Label):
+def enumerateObjects(Label,classMappingDict = CLS_MAPPING_DICT):
     
-    reverseMappingDict = {value:key for key,value in CLS_MAPPING_DICT.items()}
+    reverseMappingDict = {value:key for key,value in classMappingDict.items()}
     enumeratedObjs = col.Counter(Label)
     enumeratedObjs ={reverseMappingDict[key]:value for  key,value in enumeratedObjs.items() if value != 0}
     
@@ -158,8 +158,8 @@ if __name__ == '__main__':
     x1 = 143
     x2 = 530
     
-    img = cv.imread('./imageCaptures/AllTrails_1.jpg')
-    
+    img = cv.imread('./imageCaptures/TestImgsAll_9.jpg')
+   
     
     listOfObjArr,objects,rectangles = getObjectsFromTestImg(img) ##o are the objects you need Natish
     

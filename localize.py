@@ -168,7 +168,7 @@ def localize(frame): ##IMG : String of file path
     
     
     
-    #frame = cv2.cvtColor(IMG, cv2.COLOR_BGR2GRAY)
+    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     #frame = cv2.imread(IMG, 0)
 
     frame = frame[y1:y2, x1:x2] ##crop that bitch

@@ -14,7 +14,6 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
 
-import makeInference
 import pickle
 
 import os
@@ -23,7 +22,11 @@ import cv2 as cv
 import time
 from sklearn.model_selection import train_test_split
 
-isTrain = True
+##ccustom imports
+import getRecipe
+import makeInference
+
+isTrain = False
 
 
 
@@ -212,11 +215,12 @@ if isTrain == True:
 
 if isTrain == False:
     vidCapHandle = makeInference.initVidCap(camNum=1)
+    prevIngredientsDict = {}
     
     while True:
         
-        
-        testImg = makeInference.getFrame(vidCapHandle,mirror=False)
+#        ret_val, testImg = vidCapHandle.read()
+        testImg = makeInference.getFrame(vidCapHandle,mirror=True)
    
         listOfObjArr,objects,rectangles = makeInference.getObjectsFromTestImg(testImg)
         
@@ -231,7 +235,16 @@ if isTrain == False:
             
             
             makeInference.drawBoxesAndText(testImg,objects, rectangles,Labels)
-        
+            
+            
+            ##recipr code
+#            currIngredientsDict = makeInference.enumerateObjects(Labels)
+#            
+#            if prevIngredientsDict != currIngredientsDict:
+#                topRecipe,topRecipeSummary = getRecipe.getSuggestedRecipe(currIngredientsDict)
+#            
+#            makeInference.putTextWrap(testImg,topRecipe,(50,50))
+            
         cv.imshow("Tracking", testImg)
     
         
