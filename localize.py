@@ -2,7 +2,6 @@ import numpy as np
 import time
 import cv2
 import os
-import matplotlib.pyplot as plt
 
 
 
@@ -151,12 +150,12 @@ def replace_intercept_rects(rectangles, rect):
     return rectangles
 
 
-def localize(IMG): ##IMG : String of file path
+def localize(frame): ##IMG : String of file path
     ##crop values!
     y1 = 0
     y2 = 470
-    x1 = 120
-    x2 = 507
+    x1 = 143
+    x2 = 530
 
     rectangles = []
     objects = []
@@ -169,8 +168,8 @@ def localize(IMG): ##IMG : String of file path
     
     
     
-    frame = cv2.cvtColor(IMG, cv2.COLOR_BGR2GRAY)
-#    frame = cv2.imread(IMG, 0)
+    #frame = cv2.cvtColor(IMG, cv2.COLOR_BGR2GRAY)
+    #frame = cv2.imread(IMG, 0)
 
     frame = frame[y1:y2, x1:x2] ##crop that bitch
     
@@ -204,9 +203,11 @@ def localize(IMG): ##IMG : String of file path
 
     ##back to RGB
     frame = cv2.cvtColor(highlight, cv2.COLOR_GRAY2RGB)
+
+    cv2.imwrite("testing.jpg",frame)
     
     
-    plt.imsave('test.jpg',frame)
+    #plt.imsave('test.jpg',frame)
     
     for i in range(100):
 
@@ -272,11 +273,11 @@ if __name__ == '__main__':
     
             print(filename)
     
-            f = IMG_FOLDER + "/" + filename ##AJUST ACCORDINGLY
+            f = cv2.imread(IMG_FOLDER + "/" + filename,0) ##AJUST ACCORDINGLY
     
             (o, rectangles) = localize(f) ##o are the objects you need Natish
     
-            frame = cv2.imread(f)
+            frame = cv2.imread(IMG_FOLDER + "/" + filename)
     
 #            frame = frame[y1:y2, x1:x2]
     
