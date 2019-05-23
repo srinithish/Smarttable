@@ -34,8 +34,11 @@ dictXnYPath = workDir+'Data/AllObjectLevelData.pkl'
 
 dictOfXandY = pickle.load(open(dictXnYPath, 'rb'))
 
+
+nClasses = len(set(dictOfXandY['Y']))
+
 X = tf.placeholder(tf.float32,[None,28,28,3],name = "X")
-Y  =  tf.placeholder(tf.float32,[None,2], name = "Y")
+Y  =  tf.placeholder(tf.float32,[None,nClasses], name = "Y")
 
 ### layer configuration
 
@@ -59,7 +62,7 @@ layer3 = { "type":"conv2d",
 
 
 layer4 = { "type":"fullyConnected",
-            'outputUnits': 2,
+            'outputUnits': nClasses,
             
             "activation": None
           }
@@ -123,13 +126,26 @@ def get_network_output(input_x,layers):
       
     return constructed_network[-1]
 
+
+
+""" params """
+
+
+epochs = 200
+learning_rate = 0.003
+print_step = 1
+save_step = 1
+batchSize = 100
+save_dir = workDir+'saved_models/'
+
+
 """### Loss and minimisation"""
 
 networkOutput = get_network_output(X,layers)
 
 lossCalcu  = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=networkOutput, labels=Y))
 
-gradOptimizer = tf.train.AdamOptimizer(learning_rate=0.0003)
+gradOptimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
 
 train = gradOptimizer.minimize(lossCalcu)
 
@@ -143,20 +159,20 @@ correct_pred = tf.equal(tf.argmax(networkOutput, 1), tf.argmax(Y, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
 initialise = tf.global_variables_initializer()
 
-epochs = 1000
-learning_rate = 0.003
-print_step = 1
-save_step = 1
-batchSize = 100
-save_dir = workDir+'saved_models/'
+
 
 sess = tf.InteractiveSession()
-sess.run(initialise)
+
+##when traiining initialise variables
+if isTrain == True:
+    sess.run(initialise)
 
 saver = tf.train.Saver()
 
 
-#saver.restore(sess, save_dir+"model.ckpt")
+##when testing restore the  model
+
+saver.restore(sess, save_dir+"model.ckpt")
 
 xData = np.array(dictOfXandY['X'])
 yData = tf.one_hot(np.array(dictOfXandY['Y']),depth = len(set(dictOfXandY['Y']))).eval()
@@ -199,27 +215,39 @@ if isTrain == False:
     
     while True:
         
-        img = makeInference.getFrame(vidCapHandle,mirror=False)
-        imgReshaped = np.reshape(img,(1,300,300,3))
+        
+        testImg = makeInference.getFrame(vidCapHandle,mirror=False)
+   
+        listOfObjArr,objects,rectangles = makeInference.getObjectsFromTestImg(testImg)
+        
+        listOfObjArr = np.array(listOfObjArr)
         
         if cv.waitKey(1) == 27: 
                 break
-            
-        Label = sess.run(labelPreds,feed_dict={X:imgReshaped})
         
-        makeInference.showFrame(img,Label)
+        
+        if len(listOfObjArr) != 0:
+            Labels = sess.run(labelPreds,feed_dict={X:listOfObjArr})
+            
+            
+            makeInference.drawBoxesAndText(testImg,objects, rectangles,Labels)
+        
+        cv.imshow("Tracking", testImg)
+    
         
     cv.destroyAllWindows()
     vidCapHandle.release()   
     
-    
-    
-for i in range(len(x_test)):
-    img = x_test[:3]
-    imgReshaped = np.reshape(img,(1,28,28,3))
-    
-    Label = sess.run(labelPreds,feed_dict={X:img})
-    plt.title(Label)
-    plt.imshow(img)
-    plt.pause(5)
-    plt.close()
+
+#CLS_MAPPING_DICT = {'apple':0,'carrot':1,'cucumber':2}
+#for i in range(len(x_test)):
+#    img = x_test[i]
+#    imgReshaped = np.reshape(img,(1,28,28,3))
+#    reverseMappingDict = {value:key for key,value in CLS_MAPPING_DICT.items()}
+#    Label = sess.run(labelPreds,feed_dict={X:imgReshaped})
+##    plt.title(reverseMappingDict[Label[0]])
+#    
+#    plt.title(Label)
+#    plt.imshow(img)
+#    plt.pause(3)
+#    plt.close()

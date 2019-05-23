@@ -10,7 +10,20 @@ import cv2 as cv
 import os 
 import numpy as np
 import collections as col
+import localize
+import matplotlib.pyplot as plt
 CLS_MAPPING_DICT = {'apple':0,'carrot':1,'cucumber':2}
+
+
+
+def enumerateObjects(Label):
+    
+    reverseMappingDict = {value:key for key,value in CLS_MAPPING_DICT.items()}
+    enumeratedObjs = col.Counter(Label)
+    enumeratedObjs ={reverseMappingDict[key]:value for  key,value in enumeratedObjs.items() if value != 0}
+    
+    
+    return enumeratedObjs
 
 def initVidCap(camNum=0):
     vidCapHandle = cv.VideoCapture(camNum)
@@ -21,25 +34,21 @@ def getFrame(vidCapHandle,mirror=False):
     ret_val, img = vidCapHandle.read()
     if mirror: 
         img = cv.flip(img, 1)
-    img = cv.resize(img, (300, 300)) 
-    
+        
     return img
 
-def showFrame(img,Label):
+def showFrame(img,text):
     
     
     font                   = cv.FONT_HERSHEY_SIMPLEX
-    bottomLeftCornerOfText = (50,50)
-    fontScale              = 1
+    bottomLeftCornerOfText = (250,200)
+    fontScale              = 0.5
     fontColor              = (255,255,255)
     lineType               = 2
     
     
-    reverseMappingDict = {value:key for key,value in CLS_MAPPING_DICT.items()}
-    enumeratedObjs = col.Counter(Label)
-    enumeratedObjs ={reverseMappingDict[key]:value for  key,value in enumeratedObjs.items() }
     
-    cv.putText(img,str(enumeratedObjs), 
+    cv.putText(img,str(text), 
         bottomLeftCornerOfText, 
         font, 
         fontScale,
@@ -51,23 +60,116 @@ def showFrame(img,Label):
     pass
 
 
-def getObjectsArray(imgObject,dirpath = './imageCaptures/images/' ):
+
+
+
+def getObjectsFromTestImg(imgArray):
+    
+    
+    
+    ##takes in orginal img array 
+    (objects, rectangles) = localize.localize(imgArray)
+    
+    
+    
     listOfObjArr = []
-    listOfLabels = []
-    listOfIntLabel = []
     
-    ##get objects isolated
+    filteredObjs = []
+    filteredRects = []
     
-    for obj in imgObject.objects:
+    for obj,rect in zip(objects,rectangles):
     
         
         croppedImageOfObj = imgArray[obj.ymin:obj.ymax,obj.xmin:obj.xmax]
-        resizedImg = cv.resize(croppedImageOfObj,(28,28))
+        if len(croppedImageOfObj) != 0:
+            resizedImg = cv.resize(croppedImageOfObj,(28,28))
+            
+            listOfObjArr.append(resizedImg)
+            filteredObjs.append(obj)
+            filteredRects.append(rect)
         
-        listOfObjArr.append(resizedImg)
-        listOfLabels.append(obj.label)
-        listOfIntLabel.append(CLS_MAPPING_DICT[obj.label])
+    return listOfObjArr,filteredObjs,filteredRects
+
+
+
+def putTextWrap(imgArray,text,location):
+    
+    
+    ##location (width,height)
+    
+    font                   = cv.FONT_HERSHEY_SIMPLEX
+    bottomLeftCornerOfText = location
+    fontScale              = 0.5
+    fontColor              = (255,255,255)
+    lineType               = 2
+    
+    
+    
+    cv.putText(imgArray,str(text), 
+        bottomLeftCornerOfText, 
+        font, 
+        fontScale,
+        fontColor,
+        lineType)
+    
+    return imgArray
+    
+    
+
+def drawBoxesAndText(imgArray,objects,rectangles,Labels,classMappingdict = CLS_MAPPING_DICT):
+    
+    
+    ##need to send cropped image here
+    
+    reverseMappingDict = {value:key for key,value in CLS_MAPPING_DICT.items()}
+    
+    LabelsAsStr  = [reverseMappingDict[i] for i in Labels]
+    
+    for obj,Label in zip(objects,LabelsAsStr):
+    
         
+       centerY = (obj.ymin+obj.ymax)//2
+       centerX = (obj.xmin+obj.xmax)//2
+       
+       center = (centerX,centerY)
+       putTextWrap(imgArray,Label,center)
         
-    return listOfObjArr,listOfLabels,listOfIntLabel
+    for r in rectangles:
+    
+        cv.drawContours(imgArray, [r], -1, (0, 255, 0), 2)
+    
+    
+    
+    return imgArray
+    
+    
+
+
+
+
+    
+    
+
+
+if __name__ == '__main__':
+    
+    y1 = 0
+    y2 = 470
+    x1 = 143
+    x2 = 530
+    
+    img = cv.imread('./imageCaptures/AllTrails_1.jpg')
+    
+    
+    listOfObjArr,objects,rectangles = getObjectsFromTestImg(img) ##o are the objects you need Natish
+    
+    drawBoxesAndText(img,objects, rectangles,[0,1,1,0,2])
+
+    cv.imshow("Tracking", img)
+    
+    
+    
+    
+#    plt.imshow(img)
+#    showFrame(img,'hello')
     

@@ -80,8 +80,17 @@ def getObjectsArrayAndLables(imgObject,dirpath = './imageCaptures/images/' ):
     
 dictOfImgAndObjs = col.defaultdict(list)
 
-AllImgs = pickle.load(open('./Data/AllCarrot.pickle','rb'))
+AllImgs = pickle.load(open('./Data/AllCucumber.pickle','rb'))
 
+#for image in AllImgs:
+#    for obj in image.objects:
+#    
+#        temp = obj.xmin 
+#        obj.xmin = obj.xmax
+#        obj.xmax = temp
+#        
+#        
+#pickle.dump(AllImgs, open('./Data/AllCucumber.pickle','wb'))
 
 for image in AllImgs:
     
@@ -92,8 +101,8 @@ for image in AllImgs:
         dictOfImgAndObjs['X'].extend(getObjectsArrayAndLables(image)[0]) ## all x
         dictOfImgAndObjs['Label'].extend(getObjectsArrayAndLables(image)[1]) ##all labels
         dictOfImgAndObjs['Y'].extend(getObjectsArrayAndLables(image)[2])
-    except:
+    except Exception as ex:
         
-        print('erroor in ',image.name )
-        
-#pickle.dump(dictOfImgAndObjs,open('./Data/AllObjectLevelData.pkl','wb'))
+        print('exception', ex, 'in ', image.name)
+
+pickle.dump(dictOfImgAndObjs,open('./Data/AllObjectLevelData.pkl','wb'))

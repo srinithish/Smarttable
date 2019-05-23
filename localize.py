@@ -2,7 +2,7 @@ import numpy as np
 import time
 import cv2
 import os
-
+import matplotlib.pyplot as plt
 
 
 
@@ -155,8 +155,8 @@ def localize(IMG): ##IMG : String of file path
     ##crop values!
     y1 = 0
     y2 = 470
-    x1 = 143
-    x2 = 530
+    x1 = 120
+    x2 = 507
 
     rectangles = []
     objects = []
@@ -165,24 +165,32 @@ def localize(IMG): ##IMG : String of file path
     blackLower = np.array([0, 0, 0], dtype="uint8")
     blackUpper = np.array([10, 10, 10], dtype="uint8")
 	#########
-
-    frame = cv2.imread(IMG, 0)
+    
+    
+    
+    
+    frame = cv2.cvtColor(IMG, cv2.COLOR_BGR2GRAY)
+#    frame = cv2.imread(IMG, 0)
 
     frame = frame[y1:y2, x1:x2] ##crop that bitch
-
+    
     ##BACKGROUND IMAGES REQURED################
-    BgmImg1 = cv2.imread('BACKGROUND/EmptyTable_0.jpg', 0)
+    BgmImg1 = cv2.imread('BACKGROUND/EmptyTable_6.jpg', 0)
     BgmImg1 = BgmImg1[y1:y2, x1:x2]
-    BgmImg2 = cv2.imread('BACKGROUND/EmptyTable_1.jpg', 0)
+    BgmImg2 = cv2.imread('BACKGROUND/EmptyTable_7.jpg', 0)
     BgmImg2 = BgmImg2[y1:y2, x1:x2]
-    BgmImg3 = cv2.imread('BACKGROUND/EmptyTable_2.jpg', 0)
+    BgmImg3 = cv2.imread('BACKGROUND/EmptyTable_8.jpg', 0)
     BgmImg3 = BgmImg3[y1:y2, x1:x2]
     ###########################################
 
     BgmImg = np.mean(np.array([BgmImg1, BgmImg2, BgmImg3]), axis=0)
+    
+    ##trial code
+    
+    BgmImg = cv2.GaussianBlur(BgmImg, (21, 21), 0)
+    ##end
+    
     highlight = np.abs(frame.astype(np.int) - BgmImg.astype(np.int))
-
-    np.median(highlight)
 
     ##threshold
     highlight[highlight > 20] = 255
@@ -196,7 +204,10 @@ def localize(IMG): ##IMG : String of file path
 
     ##back to RGB
     frame = cv2.cvtColor(highlight, cv2.COLOR_GRAY2RGB)
-
+    
+    
+    plt.imsave('test.jpg',frame)
+    
     for i in range(100):
 
         blue = cv2.inRange(frame, blackLower, blackUpper)
@@ -226,55 +237,61 @@ def localize(IMG): ##IMG : String of file path
                 else:
 
                     rectangles = replace_intercept_rects(rectangles, p_rect)
+                    
+    t_rectangles = []
 
     for r in rectangles:
+        
+        t_rectangles.append(transf(r,y1,x1))
 
-        t_r = return_ordered(transf(r,x1,y1))  ##objects have global goordinates (no cropping coordinates)
+        t_r = return_ordered(transf(r,y1,x1))  ##objects have global goordinates (no cropping coordinates)
 
         item = Item('unknown', xmin=t_r[0], xmax=t_r[1], ymin=t_r[2], ymax=t_r[3])
 
         objects.append(item)
 
-    return objects, rectangles.copy()
+    return objects, t_rectangles
 
+
+if __name__ == '__main__':
 ###these are the cropped vals that work for our current set up
 # ...lazy way..but we can built a table area detectorlater
-y1 = 0
-y2 = 470
-x1 = 143
-x2 = 530
-
-##REPLACE IMAGE FOLDER
-IMG_FOLDER = "TEST"
-
-##this below is a demostration
-
-for filename in os.listdir(IMG_FOLDER):
-
-    if filename != ".DS_Store":  ##mac problem
-
-        print(filename)
-
-        f = IMG_FOLDER + "/" + filename ##AJUST ACCORDINGLY
-
-        (o, rectangles) = localize(f) ##o are the objects you need Natish
-
-        frame = cv2.imread(f, 0)
-
-        frame = frame[y1:y2, x1:x2]
-
-        for r in rectangles:
-
-            cv2.drawContours(frame, [r], -1, (0, 255, 0), 2)
-
-        cv2.imshow("Tracking", frame)
-
-        if cv2.waitKey(1) and 0xFF == ord("q"):
-            break
-
-        time.sleep(5)
-
-cv2.destroyAllWindows()
+    y1 = 0
+    y2 = 470
+    x1 = 143
+    x2 = 530
+    
+    ##REPLACE IMAGE FOLDER
+    IMG_FOLDER = "TEST"
+    
+    ##this below is a demostration
+    
+    for filename in os.listdir(IMG_FOLDER):
+    
+        if filename != ".DS_Store":  ##mac problem
+    
+            print(filename)
+    
+            f = IMG_FOLDER + "/" + filename ##AJUST ACCORDINGLY
+    
+            (o, rectangles) = localize(f) ##o are the objects you need Natish
+    
+            frame = cv2.imread(f)
+    
+#            frame = frame[y1:y2, x1:x2]
+    
+            for r in rectangles:
+    
+                cv2.drawContours(frame, [r], -1, (0, 255, 0), 2)
+    
+            cv2.imshow("Tracking", frame)
+    
+            if cv2.waitKey(1) and 0xFF == ord("q"):
+                break
+    
+            time.sleep(3)
+    
+    cv2.destroyAllWindows()
 
 
 
