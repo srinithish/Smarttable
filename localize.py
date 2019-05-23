@@ -171,11 +171,11 @@ def localize(IMG): ##IMG : String of file path
     frame = frame[y1:y2, x1:x2] ##crop that bitch
 
     ##BACKGROUND IMAGES REQURED################
-    BgmImg1 = cv2.imread('EmptyTable_0.jpg', 0)
+    BgmImg1 = cv2.imread('BACKGROUND/EmptyTable_0.jpg', 0)
     BgmImg1 = BgmImg1[y1:y2, x1:x2]
-    BgmImg2 = cv2.imread('EmptyTable_1.jpg', 0)
+    BgmImg2 = cv2.imread('BACKGROUND/EmptyTable_1.jpg', 0)
     BgmImg2 = BgmImg2[y1:y2, x1:x2]
-    BgmImg3 = cv2.imread('EmptyTable_2.jpg', 0)
+    BgmImg3 = cv2.imread('BACKGROUND/EmptyTable_2.jpg', 0)
     BgmImg3 = BgmImg3[y1:y2, x1:x2]
     ###########################################
 
