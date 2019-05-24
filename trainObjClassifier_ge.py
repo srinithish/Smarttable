@@ -26,6 +26,8 @@ from sklearn.model_selection import train_test_split
 import getRecipe
 import makeInference
 
+
+##  True if training and False if inferencing
 isTrain = False
 
 
@@ -146,36 +148,69 @@ save_dir = workDir+'saved_models/'
 
 networkOutput = get_network_output(X,layers)
 
-lossCalcu  = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=networkOutput, labels=Y))
-
 gradOptimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
+
+
+
+
+
+
+
+
+"""
+Different predictions
+"""
+softmaxProbPredictions = tf.nn.softmax(networkOutput)
+sigmoidProbPredictions = tf.nn.sigmoid(networkOutput)
+maxSigmoidProbs = tf.reduce_max(sigmoidProbPredictions,axis=1)
+labelPreds = tf.argmax(networkOutput, 1)
+
+
+##losses and train step
+lossCalcu  = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=networkOutput, labels=Y))
+#lossCalcu  = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=networkOutput, labels=Y))
+#lossCalcu = tf.losses.mean_squared_error(predictions=sigmoidProbPredictions, labels=Y)
 
 train = gradOptimizer.minimize(lossCalcu)
 
-"""
-Evaluations and prdictions
-"""
-probPredictions = tf.nn.softmax(networkOutput)
-labelPreds = tf.argmax(networkOutput, 1)
+
+
+
 correct_pred = tf.equal(tf.argmax(networkOutput, 1), tf.argmax(Y, 1))
-
 accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
+
+#############
 initialise = tf.global_variables_initializer()
-
-
-
 sess = tf.InteractiveSession()
 
 ##when traiining initialise variables
-if isTrain == True:
-    sess.run(initialise)
+#if isTrain == True:
+sess.run(initialise)
 
-saver = tf.train.Saver()
+
+##do not restore dense layers as their dimensions has changed
+varsToRestore = [var for var in tf.global_variables() if not var.name.startswith('dense')] 
+selectiveSaver = tf.train.Saver(varsToRestore)
+
+saverAll = tf.train.Saver()
+
 
 
 ##when testing restore the  model
+#if isTrain == False:
 
-saver.restore(sess, save_dir+"model.ckpt")
+##would throw an error if now already intialised
+
+## restore all except the dense layers
+##change to selectiveSaver when training
+if isTrain == True: ##when training
+    selectiveSaver.restore(sess, save_dir+"model.ckpt")
+
+if isTrain == False: ##when testing
+    saverAll.restore(sess, save_dir+"model.ckpt")
+
+    
+
 
 xData = np.array(dictOfXandY['X'])
 yData = tf.one_hot(np.array(dictOfXandY['Y']),depth = len(set(dictOfXandY['Y']))).eval()
@@ -205,9 +240,7 @@ if isTrain == True:
         
         if epoch%save_step == 0:
             
-            save_path = saver.save(sess, save_dir+"model.ckpt")
-
-
+            save_path = saverAll.save(sess, save_dir+"model.ckpt")
 
 
 
@@ -216,7 +249,7 @@ if isTrain == True:
 if isTrain == False:
     vidCapHandle = makeInference.initVidCap(camNum=1)
     prevIngredientsDict = {}
-    
+    CLS_MAPPING_DICT = pickle.load(open('./Data/CLS_MAP_DICT.pkl','rb'))
     while True:
         
 #        ret_val, testImg = vidCapHandle.read()
@@ -231,13 +264,13 @@ if isTrain == False:
         
         
         if len(listOfObjArr) != 0:
-            Labels = sess.run(labelPreds,feed_dict={X:listOfObjArr})
+            Labels,probs = sess.run([labelPreds,maxSigmoidProbs],feed_dict={X:listOfObjArr})
             
             
-            makeInference.drawBoxesAndText(testImg,objects, rectangles,Labels)
+            makeInference.drawBoxesAndText(testImg,objects,rectangles,Labels,probs,CLS_MAPPING_DICT)
             
             
-            ##recipr code
+            ##recipe code
 #            currIngredientsDict = makeInference.enumerateObjects(Labels)
 #            
 #            if prevIngredientsDict != currIngredientsDict:
@@ -250,7 +283,13 @@ if isTrain == False:
         
     cv.destroyAllWindows()
     vidCapHandle.release()   
-    
+
+
+#tf.global_variables(scope=None)
+#[var for var in tf.global_variables() if not var.name.startswith('dense')]
+
+
+
 
 #CLS_MAPPING_DICT = {'apple':0,'carrot':1,'cucumber':2}
 #for i in range(len(x_test)):

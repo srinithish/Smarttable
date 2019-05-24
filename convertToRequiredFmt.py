@@ -11,33 +11,10 @@ import os
 import cv2 
 import matplotlib.pyplot as plt
 import collections as col
+from ImgObjClass import Item,Img
+import DatabaseOps
 
 
-
-CLS_MAPPING_DICT = {'apple':0,'cucumber':2,'carrot':1}
-
-
-class Item(object):
-   def __init__(self, label , xmax, xmin, ymin, ymax):
-      self.label = label
-      self.xmax = xmax
-      self.xmin = xmin
-      self.ymin = ymin
-      self.ymax = ymax
-
-
-   def __repr__(self):
-      return '{}: xmin: {}, xmax: {}, ymin: {}, ymax: {}'.format(self.label, self.xmin,self.xmax, self.ymin, self.ymax)
-
-
-
-class Img(object):
-   def __init__(self, name, objects):
-      self.name  = name
-      self.objects = objects
-
-   def __repr__(self):
-      return '{}: {}'.format(self.name,self.objects)
 
 
 # Writer(path, width, height)
@@ -48,7 +25,7 @@ class Img(object):
 
 
     
-def getObjectsArrayAndLables(imgObject,dirpath = './imageCaptures/images/' ):
+def getObjectsArrayAndLables(imgObject,classMappingDict,dirpath = './imageCaptures/images/'):
     listOfObjArr = []
     listOfLabels = []
     listOfIntLabel = []
@@ -65,7 +42,7 @@ def getObjectsArrayAndLables(imgObject,dirpath = './imageCaptures/images/' ):
         
         listOfObjArr.append(resizedImg)
         listOfLabels.append(obj.label)
-        listOfIntLabel.append(CLS_MAPPING_DICT[obj.label])
+        listOfIntLabel.append(classMappingDict[obj.label])
         
         
     return listOfObjArr,listOfLabels,listOfIntLabel
@@ -75,34 +52,50 @@ def getObjectsArrayAndLables(imgObject,dirpath = './imageCaptures/images/' ):
 
 
 
+if __name__ == '__main__':
+    
+
+   #for image in AllImgs:
+    #    for obj in image.objects:
+    #    
+    #        temp = obj.xmin 
+    #        obj.xmin = obj.xmax
+    #        obj.xmax = temp
+    #        
+    #        
+    #pickle.dump(AllImgs, open('./Data/AllCucumber.pickle','wb'))
 
 ###generate x and y
     
-dictOfImgAndObjs = col.defaultdict(list)
-
-AllImgs = pickle.load(open('./Data/AllCucumber.pickle','rb'))
-
-#for image in AllImgs:
-#    for obj in image.objects:
-#    
-#        temp = obj.xmin 
-#        obj.xmin = obj.xmax
-#        obj.xmax = temp
-#        
-#        
-#pickle.dump(AllImgs, open('./Data/AllCucumber.pickle','wb'))
-
-for image in AllImgs:
+    
+    dictOfImgAndObjs = col.defaultdict(list)
+    conn = DatabaseOps.getConnection('ObjectsDB')
     
     
-#    imageNameNoExt = os.path.splitext(os.path.basename(image.name))[0]
-    try:
-        dictOfImgAndObjs['FileNames'].append(image.name)
-        dictOfImgAndObjs['X'].extend(getObjectsArrayAndLables(image)[0]) ## all x
-        dictOfImgAndObjs['Label'].extend(getObjectsArrayAndLables(image)[1]) ##all labels
-        dictOfImgAndObjs['Y'].extend(getObjectsArrayAndLables(image)[2])
-    except Exception as ex:
+    unqLabels = DatabaseOps.getUniqueLabels(conn,'IMAGE_INFO')
+    
+    CLS_MAPPING_DICT = {strLabel:index for index,strLabel in enumerate(unqLabels)}
+    
+    pickle.dump(CLS_MAPPING_DICT,open('./Data/CLS_MAP_DICT.pkl','wb'))
+    
+    AllImgs = DatabaseOps.fetchImgObjs(conn,'IMAGE_INFO') ##table and connection
+    
+ 
+    
+    for image in AllImgs:
         
-        print('exception', ex, 'in ', image.name)
-
-pickle.dump(dictOfImgAndObjs,open('./Data/AllObjectLevelData.pkl','wb'))
+        
+    #    imageNameNoExt = os.path.splitext(os.path.basename(image.name))[0]
+        try:
+            dictOfImgAndObjs['FileNames'].append(image.name)
+            dictOfImgAndObjs['X'].extend(getObjectsArrayAndLables(image,CLS_MAPPING_DICT)[0]) ## all x
+            dictOfImgAndObjs['Label'].extend(getObjectsArrayAndLables(image,CLS_MAPPING_DICT)[1]) ##all labels
+            dictOfImgAndObjs['Y'].extend(getObjectsArrayAndLables(image,CLS_MAPPING_DICT)[2])
+        except Exception as ex:
+            
+            print('exception', ex, 'in ', image.name)
+    
+    pickle.dump(dictOfImgAndObjs,open('./Data/AllObjectLevelData.pkl','wb'))
+    
+    conn.commit()
+    conn.close()

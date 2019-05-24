@@ -12,11 +12,11 @@ import numpy as np
 import collections as col
 import localize
 import matplotlib.pyplot as plt
-CLS_MAPPING_DICT = {'apple':0,'carrot':1,'cucumber':2}
 
 
 
-def enumerateObjects(Label,classMappingDict = CLS_MAPPING_DICT):
+
+def enumerateObjects(Label,classMappingDict):
     
     reverseMappingDict = {value:key for key,value in classMappingDict.items()}
     enumeratedObjs = col.Counter(Label)
@@ -81,7 +81,8 @@ def getObjectsFromTestImg(imgArray):
     
         
         croppedImageOfObj = imgArray[obj.ymin:obj.ymax,obj.xmin:obj.xmax]
-        if len(croppedImageOfObj) != 0:
+        
+        if  croppedImageOfObj.size != 0:
             resizedImg = cv.resize(croppedImageOfObj,(28,28))
             
             listOfObjArr.append(resizedImg)
@@ -116,23 +117,28 @@ def putTextWrap(imgArray,text,location):
     
     
 
-def drawBoxesAndText(imgArray,objects,rectangles,Labels,classMappingdict = CLS_MAPPING_DICT):
+def drawBoxesAndText(imgArray,objects,rectangles,Labels,probs,classMappingdict):
     
     
     ##need to send cropped image here
     
-    reverseMappingDict = {value:key for key,value in CLS_MAPPING_DICT.items()}
+    reverseMappingDict = {value:key for key,value in classMappingdict.items()}
     
     LabelsAsStr  = [reverseMappingDict[i] for i in Labels]
     
-    for obj,Label in zip(objects,LabelsAsStr):
+    for obj,Label,prob in zip(objects,LabelsAsStr,probs):
     
         
        centerY = (obj.ymin+obj.ymax)//2
        centerX = (obj.xmin+obj.xmax)//2
        
        center = (centerX,centerY)
-       putTextWrap(imgArray,Label,center)
+       
+       if prob < 0.8:
+           Label = 'Unknown'
+       
+       text = Label + ' '+ str(round(prob*100,1))
+       putTextWrap(imgArray,text,center)
         
     for r in rectangles:
     
@@ -172,4 +178,3 @@ if __name__ == '__main__':
     
 #    plt.imshow(img)
 #    showFrame(img,'hello')
-    
