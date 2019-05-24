@@ -165,14 +165,12 @@ def localize(frame): ##IMG : String of file path
     blackUpper = np.array([10, 10, 10], dtype="uint8")
 	#########
     
-    
-    
-    
-    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    #frame = cv2.imread(IMG, 0)
 
+    ##process image to grey and crop
     frame = frame[y1:y2, x1:x2] ##crop that bitch
-    
+
+    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
     ##BACKGROUND IMAGES REQURED################
     BgmImg1 = cv2.imread('BACKGROUND/EmptyTable_6.jpg', 0)
     BgmImg1 = BgmImg1[y1:y2, x1:x2]
@@ -205,8 +203,8 @@ def localize(frame): ##IMG : String of file path
     frame = cv2.cvtColor(highlight, cv2.COLOR_GRAY2RGB)
 
     cv2.imwrite("testing.jpg",frame)
-    
-    
+
+
     #plt.imsave('test.jpg',frame)
     
     for i in range(100):
@@ -266,32 +264,30 @@ if __name__ == '__main__':
     IMG_FOLDER = "TEST"
     
     ##this below is a demostration
-    
+
     for filename in os.listdir(IMG_FOLDER):
-    
+
         if filename != ".DS_Store":  ##mac problem
-    
+
             print(filename)
-    
-            f = cv2.imread(IMG_FOLDER + "/" + filename,0) ##AJUST ACCORDINGLY
-    
+
+            f = cv2.imread(IMG_FOLDER + "/" + filename) ##AJUST ACCORDINGLY
+
             (o, rectangles) = localize(f) ##o are the objects you need Natish
-    
+
             frame = cv2.imread(IMG_FOLDER + "/" + filename)
-    
-#            frame = frame[y1:y2, x1:x2]
-    
+
             for r in rectangles:
-    
+
                 cv2.drawContours(frame, [r], -1, (0, 255, 0), 2)
-    
+
             cv2.imshow("Tracking", frame)
-    
+
             if cv2.waitKey(1) and 0xFF == ord("q"):
                 break
-    
+
             time.sleep(3)
-    
+
     cv2.destroyAllWindows()
 
 
