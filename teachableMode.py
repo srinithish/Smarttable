@@ -18,7 +18,7 @@ from datetime import datetime
 import re
 import label
 import glob
-
+import take_picture
 camOps = captureImages.camOpertations()
 
 def capture_save_by_frame(saveFolder,Label,capFrames = 200,camNum=0):
@@ -32,27 +32,35 @@ def capture_save_by_frame(saveFolder,Label,capFrames = 200,camNum=0):
     
     createdFileNameList = []
     
-    for frameNum in range(capFrames):
+    capturedFrames = 0
+    while capturedFrames <= capFrames:
         
+    
         
-        
-        print('3 seconds for a picture, randomly place the object',frameNum)
-        time.sleep(3)
+        print('picture number : ',capturedFrames)
+        time.sleep(1)
         ret_val, img = vidCap.read()
-        print("picture taken")
+        
+
         
         img = cv.flip(img, 1)
+        
+        boolTakePic = take_picture.take_picture(img)
+        print("picture taken ",boolTakePic)
 #            img = cv.resize(img, (300, 300)) 
 #        uniqueID = int(time.mktime(datetime.now().timetuple()))
-        uniqueID = re.sub('(?:\W+)','_',str(datetime.now()))
-        fileName = Label + "_" + uniqueID+'.jpg'
-        
-        createdFileNameList.append(os.path.join(saveFolder,fileName))
         
         
-        
-        
-        cv.imwrite(os.path.join(saveFolder,fileName),img)
+        if boolTakePic == True:
+            
+            capturedFrames +=1
+            uniqueID = re.sub('(?:\W+)','_',str(datetime.now()))
+            fileName = Label + "_" + uniqueID+'.jpg'
+            
+            createdFileNameList.append(os.path.join(saveFolder,fileName))
+            
+            
+            cv.imwrite(os.path.join(saveFolder,fileName),img)
         
 
     cv.destroyAllWindows()  
@@ -64,11 +72,16 @@ def capture_save_by_frame(saveFolder,Label,capFrames = 200,camNum=0):
 
 if __name__ == '__main__':
 
-    Label = 'Potato' ### to be passed from cmd line args
-    saveFolder = './imageCaptures/images'
-    fileListCreated = capture_save_by_frame(saveFolder = saveFolder,
-                                            Label = Label,capFrames = 30,camNum=1)
+    Label = 'DELETE' ### to be passed from cmd line args
+    saveFolder = './imageCaptures'
     
+    
+    
+    fileListCreated = capture_save_by_frame(saveFolder = saveFolder,
+                                            Label = Label,capFrames = 5,camNum=1)
+    
+    
+
     
     
     
@@ -79,7 +92,7 @@ if __name__ == '__main__':
     imgObjList = label.label_imgs(fileListCreated, Label)
     
     ##db update
-    DatabaseOps.dbInsertWrapper(imgObjList)
+#    DatabaseOps.dbInsertWrapper(imgObjList)
     
     
 

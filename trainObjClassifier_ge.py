@@ -29,7 +29,7 @@ import makeInference
 
 ##  True if training and False if inferencing
 isTrain = False
-
+restoreAll = False
 
 
 
@@ -203,14 +203,14 @@ saverAll = tf.train.Saver()
 
 
 ##when testing restore the  model
-#if isTrain == False:
+
 
 ##would throw an error if now already intialised
 
 ## restore all except the dense layers
 ##change to selectiveSaver when training
-if isTrain == True: ##when training
-    selectiveSaver.restore(sess, save_dir+"model.ckpt")
+#if isTrain == True: ##when training
+#    selectiveSaver.restore(sess, save_dir+"model.ckpt")
 
 if isTrain == False: ##when testing
     saverAll.restore(sess, save_dir+"model.ckpt")
@@ -258,7 +258,7 @@ if isTrain == False:
     CLS_MAPPING_DICT = pickle.load(open('./Data/CLS_MAP_DICT.pkl','rb'))
     while True:
         
-#        ret_val, testImg = vidCapHandle.read()
+
         testImg = makeInference.getFrame(vidCapHandle,mirror=True)
    
         listOfObjArr,objects,rectangles = makeInference.getObjectsFromTestImg(testImg)
