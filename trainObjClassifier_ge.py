@@ -65,14 +65,20 @@ layer3 = { "type":"conv2d",
           "activation": tf.nn.leaky_relu
          }
 
+layer4 = { "type":"maxpool",
+            "pool_size":3,
+            "padding":'valid'
+         }
 
-layer4 = { "type":"fullyConnected",
+
+
+layer5 = { "type":"fullyConnected",
             'outputUnits': nClasses,
             
             "activation": None
           }
 
-layers = [layer1,layer2,layer3,layer4]
+layers = [layer1,layer2,layer3,layer4,layer5]
 
 def get_network_output(input_x,layers):
     '''

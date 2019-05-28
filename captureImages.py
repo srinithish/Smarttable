@@ -25,11 +25,6 @@ class camOpertations():
         
         for frameNum in range(capFrames):
             
-            print("")
-            print("")
-            print("")
-            print("")
-            print("")
             
             
             print('3 seconds for a picture',frameNum)

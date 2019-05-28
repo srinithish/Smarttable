@@ -23,7 +23,7 @@ class Item(object):
         self.ymax = ymax
 
     def __repr__(self):
-        return '{}: xmin: {}, xmax: {}, ymin: {}, ymax: {}'.format(self.label, self.xmax, self.xmin, self.ymin,
+        return '{}: xmin: {}, xmax: {}, ymin: {}, ymax: {}'.format(self.label, self.xmin,self.xmax, self.ymin,
                                                                    self.ymax)
 
 

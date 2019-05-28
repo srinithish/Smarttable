@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 import localize
-
+import os
 
 def label_imgs(IMG_NAME_LIST, label):
 
@@ -14,8 +14,12 @@ def label_imgs(IMG_NAME_LIST, label):
         f = cv2.imread(filename)
 
         o = localize_label(f,label)
-
-        i = localize.Img(filename, o)
+        
+        
+        baseName = os.path.basename(filename)
+        
+        
+        i = localize.Img(baseName, o)
 
         results.append(i)
 

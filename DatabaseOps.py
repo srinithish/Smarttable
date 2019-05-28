@@ -71,7 +71,7 @@ def insertIntoTable(conn,imageObj):
         
         used_by_model = ''
     
-    values = (fileName,pickledImgObj,Label,timestamp,used_by_model)
+        values = (fileName,pickledImgObj,Label,timestamp,used_by_model)
     
     
     try :
@@ -109,8 +109,23 @@ def getUniqueLabels(conn,fromTable):
     reqFormat = [tup[0] for tup in rows]
     return reqFormat
     
+def dbInsertWrapper(imgObjList):
     
-
+    conn = getConnection('ObjectsDB')
+    
+    
+    for img in imgObjList:
+        
+        insertIntoTable(conn,img)
+    
+    
+    
+    # Save (commit) the changes
+    conn.commit()
+    
+    conn.close()
+    
+    return True
 
 if __name__ == '__main__':
     
@@ -131,14 +146,14 @@ if __name__ == '__main__':
 """
     
 
-#    conn.execute("delete from IMAGE_INFO where obj_label like '%cucumber%'")
+#    conn.execute("delete from IMAGE_INFO where obj_label like '%Onion%'")
     conn = getConnection('ObjectsDB')
     
 #    rows = fetchImgObjs(conn,'IMAGE_INFO')
     
 #    getUniqueLabels(conn,'IMAGE_INFO')
 
-    AllImgs = pickle.load(open('./Data/AllCucumber.pickle','rb'))
+    AllImgs = pickle.load(open('./Data/AllCarrot.pickle','rb'))
     
     for img in AllImgs:
         
