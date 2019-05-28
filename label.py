@@ -1,27 +1,23 @@
 import numpy as np
-import time
 import cv2
-import os
 import localize
 
 
-def label_folder(IMG_FOLDER, label):
+def label_imgs(IMG_NAME_LIST, label):
 
     results = []
 
-    for filename in os.listdir(IMG_FOLDER):
+    for filename in IMG_NAME_LIST:
 
-        if filename != ".DS_Store":  ##mac problem
+        print(filename)
 
-            print(filename)
+        f = cv2.imread(filename)
 
-            f = cv2.imread(IMG_FOLDER + "/" + filename)
+        o = localize_label(f,label)
 
-            o = localize_label(f,label)
+        i = localize.Img(filename, o)
 
-            i = localize.Img(filename, o)
-
-            results.append(i)
+        results.append(i)
 
     print("Done!")
 
@@ -133,7 +129,7 @@ def localize_label(frame, label): ##IMG : String of file path
 
 if __name__ == '__main__':
 
-    IMG_FOLDER = "TEST"
+    IMG_NAME_LIST = ['TEST/TestImgsAll_5.jpg','TEST/TestImgsAll_6.jpg','TEST/TestImgsAll_7.jpg']
 
-    print(label_folder(IMG_FOLDER, "apple"))
+    print(label_imgs(IMG_NAME_LIST, "apple"))
 
