@@ -19,7 +19,7 @@ import re
 import label
 import glob
 import take_picture
-camOps = captureImages.camOpertations()
+
 
 def capture_save_by_frame(saveFolder,Label,capFrames = 200,camNum=0):
     

@@ -146,10 +146,10 @@ if __name__ == '__main__':
 """
     
 
-#    conn.execute("delete from IMAGE_INFO where obj_label like '%Onion%'")
+
     conn = getConnection('ObjectsDB')
-    
-#    rows = fetchImgObjs(conn,'IMAGE_INFO')
+#    conn.execute("delete from IMAGE_INFO where obj_label like '%lemon%'")    
+
     
 #    getUniqueLabels(conn,'IMAGE_INFO')
 

@@ -29,7 +29,7 @@ import makeInference
 
 ##  True if training and False if inferencing
 isTrain = False
-restoreAll = False
+trainFromScratch = False
 
 
 
@@ -209,8 +209,8 @@ saverAll = tf.train.Saver()
 
 ## restore all except the dense layers
 ##change to selectiveSaver when training
-#if isTrain == True: ##when training
-#    selectiveSaver.restore(sess, save_dir+"model.ckpt")
+if isTrain == True and trainFromScratch == False: ##when training
+    selectiveSaver.restore(sess, save_dir+"model.ckpt")
 
 if isTrain == False: ##when testing
     saverAll.restore(sess, save_dir+"model.ckpt")
